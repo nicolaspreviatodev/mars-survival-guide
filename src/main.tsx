@@ -20,6 +20,10 @@ import { idioma } from './lib/i18n'
 // Declara o idioma na raiz para leitores de tela e para o navegador.
 document.documentElement.lang = idioma() === 'pt' ? 'pt-BR' : 'en'
 
+// No GitHub Pages o site vive em /<repositorio>/. O basename faz o router
+// trabalhar relativo a essa subpasta, sem quebrar os links internos.
+const base = import.meta.env.BASE_URL
+
 const router = createBrowserRouter([
   {
     path: '/',
@@ -39,7 +43,7 @@ const router = createBrowserRouter([
       { path: 'manual', element: <Manual /> },
     ],
   },
-])
+], { basename: base })
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

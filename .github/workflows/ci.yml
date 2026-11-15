@@ -26,6 +26,14 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          GITHUB_PAGES: 'true'
+
+      # O site usa rotas no cliente. O Pages não conhece essas rotas e
+      # devolveria 404 ao recarregar. A cópia do index como 404.html faz
+      # o próprio app assumir a navegação.
+      - name: Fallback de rotas
+        run: cp dist/index.html dist/404.html
 
       - name: Publicar artefato
         uses: actions/upload-artifact@v5
@@ -33,3 +41,29 @@ jobs:
           name: dist
           path: dist
           retention-days: 14
+
+  deploy:
+    name: Publicar no GitHub Pages
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/download-artifact@v5
+        with:
+          name: dist
+          path: dist
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - id: deploy
+        uses: actions/deploy-pages@v4
